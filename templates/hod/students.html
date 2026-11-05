@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Department Students - AttendAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-people-fill text-primary me-2"></i>Department Students
+            </h2>
+            <p class="text-muted mb-0">
+                Department of {{ current_user.department.name if current_user.department else 'Your Department' }} &bull; Student enrollment, facial registration, and attendance status
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('hod.alerts') }}" class="btn btn-outline-danger">
+                <i class="bi bi-exclamation-diamond me-1"></i> Defaulter Alerts
+            </a>
+            <a href="{{ url_for('hod.dashboard') }}" class="btn btn-light border">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3 p-lg-4">
+            <form method="GET" action="{{ url_for('hod.students') }}" class="row g-3 align-items-end">
+                <!-- Search Keyword -->
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted">Search Student</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" name="search" 
+                               placeholder="Search name, roll no..." value="{{ request.args.get('search', '') }}">
+                    </div>
+                </div>
+
+                <!-- Section Dropdown -->
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Section</label>
+                    <select class="form-select" name="section_id">
+                        <option value="">All Sections</option>
+                        {% for sec in sections|default([]) %}
+                            <option value="{{ sec.id }}" {% if request.args.get('section_id')|string == sec.id|string %}selected{% endif %}>
+                                {{ sec.name }} (Year {{ sec.year }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Attendance Filter -->
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Attendance Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Students</option>
+                        <option value="good" {% if request.args.get('status') == 'good' %}selected{% endif %}>Satisfactory (&ge; 75%)</option>
+                        <option value="warning" {% if request.args.get('status') == 'warning' %}selected{% endif %}>At Risk (65% - 75%)</option>
+                        <option value="critical" {% if request.args.get('status') == 'critical' %}selected{% endif %}>Critical (&lt; 65%)</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <a href="{{ url_for('hod.students') }}" class="btn btn-light border" title="Reset">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Students Table Card -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">Enrolled Students</h5>
+                <small class="text-muted">
+                    {% if pagination %}
+                        Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} - 
+                        {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} students
+                    {% elif students %}
+                        Total {{ students|length }} students listed
+                    {% else %}
+                        No students found
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Section</th>
+                            <th>Year / Sem</th>
+                            <th>Attendance %</th>
+                            <th>Status</th>
+                            <th>Face Data</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set student_items = pagination.items if pagination else students %}
+                        {% if student_items %}
+                            {% for st in student_items %}
+                            {% set st_rate = st.attendance_percentage|default(st.attendance_rate|default(0.0))|float %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="font-monospace fw-bold text-dark">{{ st.roll_number }}</span>
+                                    {% if st.admission_number %}
+                                        <div class="small text-muted font-monospace">Adm: {{ st.admission_number }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ st.user.name if st.user else (st.name|default('Student')) }}</div>
+                                    <small class="text-muted">{{ st.user.email if st.user else (st.email|default('')) }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        {{ st.section.name if st.section else (st.section_name|default('-')) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small text-dark">
+                                        Year {{ st.year if st.year else (st.section.year if st.section else '-') }}
+                                        {% if st.section and st.section.semester %} / Sem {{ st.section.semester }}{% endif %}
+                                    </span>
+                                </td>
+                                <td style="min-width: 150px;">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-2 {% if st_rate >= 75 %}text-success{% elif st_rate >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ "%.1f"|format(st_rate) }}%
+                                        </span>
+                                        <div class="progress flex-grow-1" style="height: 6px;">
+                                            <div class="progress-bar {% if st_rate >= 75 %}bg-success{% elif st_rate >= 65 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ st_rate if st_rate <= 100 else 100 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if st_rate >= 75 %}
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-shield-check me-1"></i>Good
+                                        </span>
+                                    {% elif st_rate >= 65 %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>At Risk
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-x-octagon me-1"></i>Critical
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set has_faces = (st.face_enrollments|length > 0) if st.face_enrollments is defined else st.has_face_enrolled|default(false) %}
+                                    {% if has_faces %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-person-check-fill me-1"></i>Enrolled
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                            <i class="bi bi-person-dash me-1"></i>Pending
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('hod.student_detail', student_id=st.id) }}" 
+                                           class="btn btn-outline-primary" title="View Full Details">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                        {% if st_rate < 75 %}
+                                        <a href="{{ url_for('hod.alerts') }}?student_id={{ st.id }}" 
+                                           class="btn btn-outline-danger" title="Send Alert">
+                                            <i class="bi bi-bell-fill"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people display-6 d-block mb-2 text-secondary"></i>
+                                    No students match the selected filter criteria.
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('hod.students') }}" class="btn btn-sm btn-light border">
+                                            Reset Search
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="card-footer bg-white border-top border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <small class="text-muted">
+                Page <strong>{{ pagination.page }}</strong> of <strong>{{ pagination.pages }}</strong>
+            </small>
+            <nav aria-label="Student list pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('hod.students', page=pagination.prev_num, search=request.args.get('search'), section_id=request.args.get('section_id'), status=request.args.get('status')) if pagination.has_prev else '#' }}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('hod.students', page=p, search=request.args.get('search'), section_id=request.args.get('section_id'), status=request.args.get('status')) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('hod.students', page=pagination.next_num, search=request.args.get('search'), section_id=request.args.get('section_id'), status=request.args.get('status')) if pagination.has_next else '#' }}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

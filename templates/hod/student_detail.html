@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.user.name if student.user else student.name }} - Student Details - AttendAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('hod.dashboard') }}" class="text-decoration-none">HOD Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('hod.students') }}" class="text-decoration-none">Students</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ student.user.name if student.user else student.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="fw-bold mb-0 text-dark">
+                    {{ student.user.name if student.user else student.name }}
+                </h2>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary fs-6">
+                    {{ student.roll_number }}
+                </span>
+            </div>
+            <p class="text-muted mb-0 mt-1">
+                {{ student.department.name if student.department else (current_user.department.name if current_user.department else '') }} &bull; 
+                Section {{ student.section.name if student.section else '-' }} &bull; 
+                Year {{ student.year if student.year else '-' }}
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('hod.alerts') }}?student_id={{ student.id }}" class="btn btn-danger">
+                <i class="bi bi-bell me-1"></i> Send Attendance Alert
+            </a>
+            <a href="{{ url_for('hod.students') }}" class="btn btn-light border">
+                <i class="bi bi-arrow-left me-1"></i> Back to Students
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile & Overall Attendance Row -->
+    <div class="row g-4 mb-4">
+        <!-- Profile Card -->
+        <div class="col-lg-5 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="avatar-lg bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3 shadow"
+                             style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                            {{ (student.user.name if student.user else student.name)[:1]|upper }}
+                        </div>
+                        <h4 class="fw-bold mb-1 text-dark">{{ student.user.name if student.user else student.name }}</h4>
+                        <div class="text-muted font-monospace small mb-2">{{ student.roll_number }}</div>
+                        {% set st_rate = student.attendance_percentage|default(overall_stats.percentage|default(0.0))|float %}
+                        {% if st_rate >= 75 %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1">
+                                <i class="bi bi-check-circle-fill me-1"></i>Good Standing
+                            </span>
+                        {% elif st_rate >= 65 %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-1">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Shortage Warning
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-1">
+                                <i class="bi bi-x-octagon-fill me-1"></i>Critical Shortage
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <hr class="text-light my-3">
+
+                    <!-- Profile Details List -->
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Email Address</span>
+                            <span class="fw-semibold text-dark text-break small">{{ student.user.email if student.user else student.email }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Admission Number</span>
+                            <span class="fw-semibold text-dark font-monospace small">{{ student.admission_number|default('N/A') }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Department</span>
+                            <span class="fw-semibold text-dark small">{{ student.department.name if student.department else (current_user.department.name if current_user.department else '-') }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Section</span>
+                            <span class="fw-semibold text-dark small">{{ student.section.name if student.section else '-' }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Academic Year / Sem</span>
+                            <span class="fw-semibold text-dark small">
+                                Year {{ student.year if student.year else '-' }}
+                                {% if student.section and student.section.semester %} &bull; Sem {{ student.section.semester }}{% endif %}
+                            </span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom border-light">
+                            <span class="text-muted small">Phone</span>
+                            <span class="fw-semibold text-dark small">{{ student.user.phone if student.user and student.user.phone else 'Not provided' }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2">
+                            <span class="text-muted small">Face Recognition Data</span>
+                            {% set has_faces = (student.face_enrollments|length > 0) if student.face_enrollments is defined else student.has_face_enrolled|default(false) %}
+                            {% if has_faces %}
+                                <span class="badge bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-shield-check me-1"></i>Enrolled ({{ student.face_enrollments|length if student.face_enrollments is defined else 'Yes' }})
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                    <i class="bi bi-shield-x me-1"></i>Not Enrolled
+                                </span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Performance Summary -->
+        <div class="col-lg-7 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white border-bottom border-light py-3">
+                    <h5 class="fw-bold mb-0 text-dark">Overall Attendance Metrics</h5>
+                    <small class="text-muted">Aggregate attendance across all courses registered this semester</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center g-4 mb-4">
+                        <div class="col-sm-5 text-center">
+                            <div class="d-inline-flex flex-column align-items-center justify-content-center p-4 rounded-circle border border-4 
+                                        {% if st_rate >= 75 %}border-success{% elif st_rate >= 65 %}border-warning{% else %}border-danger{% endif %}"
+                                 style="width: 150px; height: 150px;">
+                                <div class="display-5 fw-bold {% if st_rate >= 75 %}text-success{% elif st_rate >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ "%.1f"|format(st_rate) }}%
+                                </div>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Attendance</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <small class="text-muted d-block mb-1">Total Classes Held</small>
+                                        <h4 class="fw-bold mb-0 text-dark">
+                                            {{ overall_stats.total_classes if overall_stats else student.total_classes|default(0) }}
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                                        <small class="text-success d-block mb-1">Classes Attended</small>
+                                        <h4 class="fw-bold mb-0 text-success">
+                                            {{ overall_stats.attended_classes if overall_stats else student.attended_classes|default(0) }}
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-danger bg-opacity-10 rounded-3">
+                                        <small class="text-danger d-block mb-1">Classes Missed</small>
+                                        <h4 class="fw-bold mb-0 text-danger">
+                                            {{ overall_stats.missed_classes if overall_stats else student.missed_classes|default(0) }}
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-info bg-opacity-10 rounded-3">
+                                        <small class="text-info d-block mb-1">Threshold Target</small>
+                                        <h4 class="fw-bold mb-0 text-info">75.0%</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if st_rate < 75 %}
+                    <div class="alert alert-danger d-flex align-items-center rounded-3 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                        <div>
+                            <strong>Attendance Deficiency Detected:</strong> This student is below the mandatory 75% attendance threshold. They may be disqualified from semester examinations unless rectified.
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success d-flex align-items-center rounded-3 mb-0" role="alert">
+                        <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                        <div>
+                            <strong>Satisfactory Attendance:</strong> This student currently satisfies the mandatory minimum attendance guidelines.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject-wise Breakdown Table -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white border-bottom border-light py-3">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-journals text-primary me-2"></i>Subject-wise Attendance Breakdown
+            </h5>
+            <small class="text-muted">Detailed performance across individual academic subjects</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Subject</th>
+                            <th>Faculty</th>
+                            <th>Held</th>
+                            <th>Attended</th>
+                            <th>Missed</th>
+                            <th>Percentage</th>
+                            <th class="pe-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set subjects_list = subject_breakdown if subject_breakdown else (student.subject_stats if student.subject_stats is defined else []) %}
+                        {% if subjects_list %}
+                            {% for sub in subjects_list %}
+                            {% set sub_pct = sub.attendance_percentage|default(sub.percentage|default(0.0))|float %}
+                            <tr>
+                                <td class="ps-4">
+                                    <strong>{{ sub.code if sub.code else sub.subject_code }}</strong>
+                                    <div class="small text-muted">{{ sub.name if sub.name else sub.subject_name }}</div>
+                                </td>
+                                <td>
+                                    <span class="small text-dark">{{ sub.faculty_name|default('Faculty') }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ sub.total_sessions|default(sub.sessions_held|default(0)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-semibold">
+                                        {{ sub.present_count|default(sub.attended_count|default(0)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-danger fw-semibold">
+                                        {{ sub.absent_count|default(sub.missed_count|default(0)) }}
+                                    </span>
+                                </td>
+                                <td style="min-width: 160px;">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-2 {% if sub_pct >= 75 %}text-success{% elif sub_pct >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ "%.1f"|format(sub_pct) }}%
+                                        </span>
+                                        <div class="progress flex-grow-1" style="height: 6px;">
+                                            <div class="progress-bar {% if sub_pct >= 75 %}bg-success{% elif sub_pct >= 65 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ sub_pct if sub_pct <= 100 else 100 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="pe-4">
+                                    {% if sub_pct >= 75 %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">Eligible</span>
+                                    {% elif sub_pct >= 65 %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">Warning</span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">Shortage</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-book fs-3 d-block mb-2 text-secondary"></i>
+                                    No course breakdown available for this student.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance History Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Recent Attendance History
+                </h5>
+                <small class="text-muted">Chronological session participation records</small>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date & Time</th>
+                            <th>Period</th>
+                            <th>Subject</th>
+                            <th>Faculty</th>
+                            <th>Status</th>
+                            <th class="pe-4">Method / Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set history_list = attendance_history if attendance_history else (records if records else (student.attendance_records if student.attendance_records is defined else [])) %}
+                        {% if history_list %}
+                            {% for rec in history_list %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-semibold text-dark">
+                                        {{ rec.session.date.strftime('%d %b %Y') if rec.session and rec.session.date else (rec.date if rec.date else '-') }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ rec.first_seen_at.strftime('%I:%M %p') if rec.first_seen_at else (rec.time if rec.time else '-') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        P{{ rec.session.period_number if rec.session else (rec.period_number|default(rec.period|default(1))) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ rec.session.subject.code if rec.session and rec.session.subject else (rec.subject_code|default('')) }}</strong>
+                                    <div class="small text-muted">{{ rec.session.subject.name if rec.session and rec.session.subject else (rec.subject_name|default('-')) }}</div>
+                                </td>
+                                <td>
+                                    <small class="text-dark">
+                                        {{ rec.session.faculty.name if rec.session and rec.session.faculty else (rec.faculty_name|default('Faculty')) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if rec.status == 'present' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-check-circle me-1"></i>Present
+                                        </span>
+                                    {% elif rec.status == 'late' %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-clock me-1"></i>Late
+                                        </span>
+                                    {% elif rec.status == 'excused' %}
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-info-circle me-1"></i>Excused
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-x-circle me-1"></i>Absent
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4">
+                                    {% if rec.is_manually_modified %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary" title="{{ rec.modification_reason|default('Manually modified') }}">
+                                            <i class="bi bi-pencil me-1"></i>Manual Edit
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border">
+                                            <i class="bi bi-camera-video me-1"></i>Face AI
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x display-6 d-block mb-2 text-secondary"></i>
+                                    No attendance session records logged for this student yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

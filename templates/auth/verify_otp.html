@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendAI | Verify OTP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --navy: #111936;
+            --text: #20263d;
+            --muted: #7b8197;
+            --border: #e4e7f0;
+            --background: #f7f8fc;
+            --white: #ffffff;
+            --success: #16845a;
+            --error: #d14343;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(17, 25, 54, 0.05);
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--navy);
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 20px;
+            background: var(--primary);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        }
+
+        .header-text h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-text p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .flash-box {
+            margin-bottom: 20px;
+        }
+
+        .alert-item {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .otp-input-wrap {
+            margin-bottom: 24px;
+        }
+
+        .otp-input {
+            width: 100%;
+            height: 56px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 14px;
+            text-align: center;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: #fafafa;
+            color: var(--navy);
+            transition: all 0.2s ease;
+            font-family: monospace;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 48px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: var(--white);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+            font-family: inherit;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        .resend-box {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .resend-box a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .resend-box a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 13.5px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--navy);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <a href="{{ url_for('auth.login') if current_app and 'auth.login' in current_app.view_functions else '/auth/login' }}" class="logo-wrap">
+            <span class="logo-icon">✦</span>
+            <span>Attend<span style="color: var(--primary);">AI</span></span>
+        </a>
+
+        <div class="header-text">
+            <h2>Enter 6-Digit OTP</h2>
+            <p>A verification code was sent to <strong>{{ email or 'your registered email' }}</strong>. Please enter the code below.</p>
+        </div>
+
+        <!-- Flash Messages -->
+        <div class="flash-box">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% set cat_class = 'alert-danger' if category in ['error', 'danger'] else ('alert-warning' if category == 'warning' else 'alert-success') %}
+                        <div class="alert-item {{ cat_class }}">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.verify_otp') if current_app and 'auth.verify_otp' in current_app.view_functions else '/auth/verify-otp' }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="email" value="{{ email or request.args.get('email', '') }}">
+
+            <div class="otp-input-wrap">
+                <input 
+                    type="text" 
+                    name="otp" 
+                    id="otp" 
+                    class="otp-input" 
+                    maxlength="6" 
+                    pattern="[0-9]{6}" 
+                    inputmode="numeric" 
+                    placeholder="······" 
+                    required 
+                    autofocus
+                    autocomplete="one-time-code"
+                >
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>Verify & Continue</span>
+                <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="resend-box">
+            Didn't receive the email? 
+            <a href="{{ url_for('auth.forgot_password') if current_app and 'auth.forgot_password' in current_app.view_functions else '/auth/forgot-password' }}">
+                Request new code
+            </a>
+        </div>
+
+        <a href="{{ url_for('auth.login') if current_app and 'auth.login' in current_app.view_functions else '/auth/login' }}" class="back-link">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Sign In</span>
+        </a>
+    </div>
+
+</body>
+</html>

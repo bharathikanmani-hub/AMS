@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendAI | Student Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="student_dashboard.css">
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">🎓</div>
+            <div>
+                <h2>AI Attendance</h2>
+                <p>Management System</p>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <a href="#dashboard" class="menu-btn active">
+                <span>⌂</span> Dashboard
+            </a>
+            <a href="#attendance" class="menu-btn">
+                <span>▦</span> My Attendance
+            </a>
+            <a href="#timetable" class="menu-btn">
+                <span>◷</span> Time Table
+            </a>
+            <a href="#profile" class="menu-btn">
+                <span>♙</span> Profile
+            </a>
+            <a href="#password" class="menu-btn">
+                <span>🔒</span> Change Password
+            </a>
+            <button class="menu-btn logout-btn" onclick="logout()">
+                <span>⇥</span> Logout
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <span>⌁</span>
+            <div>
+                <strong>Smart Attendance</strong>
+                <p>Better Tomorrow</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main" id="dashboard">
+
+        <header class="topbar">
+            <div class="search-box">
+                <span>⌕</span>
+                <input type="search" id="searchInput"
+                       placeholder="Search subjects...">
+            </div>
+
+            <div class="top-right">
+                <button class="notification" title="Notifications">♧
+                    <span>3</span>
+                </button>
+
+                <div class="user-mini">
+                    <div class="mini-avatar" id="userInitial">P</div>
+                    <div>
+                        <small>Welcome,</small>
+                        <strong id="userName">Priya S</strong>
+                    </div>
+                    <span>⌄</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="page-heading">
+            <div>
+                <h1>Student Dashboard</h1>
+                <p>Track your attendance, view your timetable and stay updated.</p>
+            </div>
+            <div class="date-display">▣ <span id="currentDate"></span></div>
+        </section>
+
+        <!-- PROFILE, OVERALL ATTENDANCE, SUBJECT ATTENDANCE -->
+        <section class="top-grid">
+
+            <div class="card profile-card" id="profile">
+                <h3><span>♟</span> Student Profile</h3>
+
+                <div class="profile-content">
+                    <div class="profile-photo">
+                        <div class="photo-placeholder" id="profileInitial">P</div>
+                        <span>Student</span>
+                    </div>
+
+                    <div class="profile-details">
+                        <h2 id="profileName">Priya S</h2>
+                        <p>B.E. Computer Science and Engineering</p>
+                        <p>Reg. No : <strong id="registerNumber">22CS101</strong></p>
+                        <p>Year : <strong>3rd Year</strong></p>
+                        <p>Section : <strong>A</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card overall-card">
+                <h3><span>◕</span> Overall Attendance</h3>
+
+                <div class="overall-content">
+                    <div class="circle" id="attendanceCircle"
+                         style="--percentage:86">
+                        <div class="circle-inner">
+                            <strong id="attendancePercent">86%</strong>
+                            <span>Present</span>
+                        </div>
+                    </div>
+
+                    <div class="legend">
+                        <p><i class="dot green"></i> Present
+                            <strong id="presentCount">43</strong></p>
+                        <p><i class="dot red"></i> Absent
+                            <strong id="absentCount">7</strong></p>
+                        <p><i class="dot grey"></i> Total
+                            <strong id="totalCount">50</strong></p>
+                    </div>
+                </div>
+
+                <div class="success-message" id="attendanceMessage">
+                    ✓ &nbsp; Good! Your attendance is above 75%.
+                </div>
+            </div>
+
+            <div class="card subjects-card">
+                <h3><span>▥</span> Subject-wise Attendance</h3>
+                <div id="subjectList"></div>
+            </div>
+
+        </section>
+
+        <!-- RECENT RECORDS, TIMETABLE, ALERTS -->
+        <section class="bottom-grid">
+
+            <div class="card records-card" id="attendance">
+                <div class="card-heading">
+                    <h3>▣ &nbsp; Recent Attendance Records</h3>
+                    <button class="text-btn" onclick="showAllRecords()">
+                        View All
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Mode</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentHistory"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card timetable-card" id="timetable">
+                <div class="card-heading">
+                    <h3>◷ &nbsp; Time Table</h3>
+                    <button class="text-btn" onclick="showFullTimetable()">
+                        View Full Time Table
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Subject</th>
+                                <th>Time</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="card alerts-card">
+                    <div class="card-heading">
+                        <h3>⚠ &nbsp; Low Attendance Alerts</h3>
+                        <button class="text-btn" onclick="showAllAlerts()">
+                            View All
+                        </button>
+                    </div>
+
+                    <div id="alertList"></div>
+                </div>
+
+                <div class="warning-message">
+                    <strong>🔴 &nbsp; Take action soon!</strong>
+                    <p id="warningText">
+                        Your attendance requires attention. Attend upcoming classes regularly.
+                    </p>
+                </div>
+            </div>
+
+        </section>
+
+        <footer>
+            © 2025 AI Attendance Management System. All rights reserved.
+            <span>Learn &nbsp; | &nbsp; Attend &nbsp; | &nbsp; Succeed</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="student_dashboard.js"></script>
+</body>
+</html>

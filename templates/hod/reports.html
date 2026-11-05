@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Department Reports - AttendAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-file-earmark-bar-graph-fill text-primary me-2"></i>Department Attendance Reports
+            </h2>
+            <p class="text-muted mb-0">
+                Department of {{ current_user.department.name if current_user.department else 'Your Department' }} &bull; Custom report generation and multi-format data exports
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('hod.dashboard') }}" class="btn btn-light border">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Configuration Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white border-bottom border-light py-3">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-sliders text-primary me-2"></i>Report Parameters & Filter Scope
+            </h5>
+            <small class="text-muted">Choose report type, time frame, and academic parameters to compile</small>
+        </div>
+        <div class="card-body p-4">
+            <form method="GET" action="{{ url_for('hod.reports') }}" id="reportForm">
+                <div class="row g-3">
+                    <!-- Report Type -->
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-muted">Report Type</label>
+                        <select class="form-select" name="report_type" id="reportType">
+                            <option value="summary" {% if request.args.get('report_type') == 'summary' %}selected{% endif %}>
+                                Department Attendance Summary
+                            </option>
+                            <option value="defaulters" {% if request.args.get('report_type') == 'defaulters' %}selected{% endif %}>
+                                Low Attendance Defaulter List (&lt; 75%)
+                            </option>
+                            <option value="subject" {% if request.args.get('report_type') == 'subject' %}selected{% endif %}>
+                                Subject-wise Performance Report
+                            </option>
+                            <option value="section" {% if request.args.get('report_type') == 'section' %}selected{% endif %}>
+                                Section-wise Attendance Breakdown
+                            </option>
+                            <option value="daily" {% if request.args.get('report_type') == 'daily' %}selected{% endif %}>
+                                Daily Attendance Log
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted">From Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" class="form-control border-start-0 ps-0" name="start_date" 
+                                   value="{{ request.args.get('start_date', start_date|default('')) }}">
+                        </div>
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted">To Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" class="form-control border-start-0 ps-0" name="end_date" 
+                                   value="{{ request.args.get('end_date', end_date|default('')) }}">
+                        </div>
+                    </div>
+
+                    <!-- Section -->
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted">Class Section</label>
+                        <select class="form-select" name="section_id">
+                            <option value="">All Sections</option>
+                            {% for sec in sections|default([]) %}
+                                <option value="{{ sec.id }}" {% if request.args.get('section_id')|string == sec.id|string %}selected{% endif %}>
+                                    {{ sec.name }} (Year {{ sec.year }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted">Subject / Course</label>
+                        <select class="form-select" name="subject_id">
+                            <option value="">All Subjects</option>
+                            {% for sub in subjects|default([]) %}
+                                <option value="{{ sub.id }}" {% if request.args.get('subject_id')|string == sub.id|string %}selected{% endif %}>
+                                    {{ sub.code }} - {{ sub.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Threshold (for defaulters) -->
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-muted">Attendance Threshold (%)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="threshold" min="1" max="100" 
+                                   value="{{ request.args.get('threshold', threshold|default(75)) }}">
+                            <span class="input-group-text bg-light">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="text-light my-4">
+
+                <!-- Action Controls & Export Buttons -->
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="preview" class="btn btn-primary px-4">
+                            <i class="bi bi-eye-fill me-1"></i> Generate Preview
+                        </button>
+                        <a href="{{ url_for('hod.reports') }}" class="btn btn-light border">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                        </a>
+                    </div>
+
+                    <!-- Export Buttons -->
+                    <div class="btn-group" role="group" aria-label="Export Formats">
+                        <button type="submit" name="export" value="csv" class="btn btn-outline-success">
+                            <i class="bi bi-filetype-csv me-1"></i> Export CSV
+                        </button>
+                        <button type="submit" name="export" value="excel" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+                        </button>
+                        <button type="submit" name="export" value="pdf" class="btn btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Preview Area -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-table text-primary me-2"></i>Report Output Preview
+                </h5>
+                <small class="text-muted">
+                    {% if report_data %}
+                        Compiled {{ report_data|length }} data entries
+                    {% else %}
+                        Results will appear here upon generating a preview
+                    {% endif %}
+                </small>
+            </div>
+            {% if report_data %}
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i> Print Table
+            </button>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            {% if report_data %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">#</th>
+                                <th>Student / Subject / Section</th>
+                                <th>Identifier</th>
+                                <th>Sessions Total</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Attendance %</th>
+                                <th class="pe-4 text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in report_data %}
+                            {% set pct = row.attendance_percentage|default(row.percentage|default(0.0))|float %}
+                            <tr>
+                                <td class="ps-4 text-muted small">{{ loop.index }}</td>
+                                <td>
+                                    <strong>{{ row.name if row.name else (row.title if row.title else (row.student_name|default('Record'))) }}</strong>
+                                    {% if row.details or row.section_name %}
+                                        <div class="small text-muted">{{ row.details if row.details else row.section_name }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <code class="small text-dark">{{ row.code if row.code else (row.roll_number|default('-')) }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ row.total_sessions|default(row.total_classes|default(0)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-semibold">
+                                        {{ row.present_count|default(row.attended_classes|default(0)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-danger fw-semibold">
+                                        {{ row.absent_count|default(row.missed_classes|default(0)) }}
+                                    </span>
+                                </td>
+                                <td style="min-width: 140px;">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-2 {% if pct >= 75 %}text-success{% elif pct >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ "%.1f"|format(pct) }}%
+                                        </span>
+                                        <div class="progress flex-grow-1" style="height: 6px;">
+                                            <div class="progress-bar {% if pct >= 75 %}bg-success{% elif pct >= 65 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    {% if pct >= 75 %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">Satisfactory</span>
+                                    {% elif pct >= 65 %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">Warning</span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">Defaulter</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-file-earmark-spreadsheet display-5 text-secondary opacity-50 d-block mb-3"></i>
+                    <h6 class="fw-semibold text-muted">No Report Generated Yet</h6>
+                    <p class="text-muted small mb-3">Select your desired parameters above and click "Generate Preview" or choose an export format.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

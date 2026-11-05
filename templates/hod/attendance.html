@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Department Attendance Records - AttendAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-calendar-check-fill text-primary me-2"></i>Department Attendance Records
+            </h2>
+            <p class="text-muted mb-0">
+                Department of {{ current_user.department.name if current_user.department else 'Your Department' }} &bull; Class session logs and individual attendance tracking
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('hod.reports') }}" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i> Generate Report
+            </a>
+            <a href="{{ url_for('hod.dashboard') }}" class="btn btn-light border">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{{ url_for('hod.attendance') }}" class="row g-3">
+                <!-- Date Filter -->
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label small fw-semibold text-muted">Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar"></i></span>
+                        <input type="date" class="form-control border-start-0 ps-0" name="date" 
+                               value="{{ request.args.get('date', selected_date|default('')) }}">
+                    </div>
+                </div>
+
+                <!-- Section Filter -->
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label small fw-semibold text-muted">Section</label>
+                    <select class="form-select" name="section_id">
+                        <option value="">All Sections</option>
+                        {% for sec in sections|default([]) %}
+                            <option value="{{ sec.id }}" {% if request.args.get('section_id')|string == sec.id|string or selected_section|string == sec.id|string %}selected{% endif %}>
+                                {{ sec.name }} (Year {{ sec.year }}, Sem {{ sec.semester }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Subject Filter -->
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label small fw-semibold text-muted">Subject</label>
+                    <select class="form-select" name="subject_id">
+                        <option value="">All Subjects</option>
+                        {% for sub in subjects|default([]) %}
+                            <option value="{{ sub.id }}" {% if request.args.get('subject_id')|string == sub.id|string or selected_subject|string == sub.id|string %}selected{% endif %}>
+                                {{ sub.code }} - {{ sub.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label small fw-semibold text-muted">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="present" {% if request.args.get('status') == 'present' %}selected{% endif %}>Present</option>
+                        <option value="absent" {% if request.args.get('status') == 'absent' %}selected{% endif %}>Absent</option>
+                        <option value="late" {% if request.args.get('status') == 'late' %}selected{% endif %}>Late</option>
+                        <option value="excused" {% if request.args.get('status') == 'excused' %}selected{% endif %}>Excused</option>
+                    </select>
+                </div>
+
+                <!-- Submit / Clear Buttons -->
+                <div class="col-12 d-flex justify-content-end gap-2 pt-2">
+                    <a href="{{ url_for('hod.attendance') }}" class="btn btn-light border px-4">
+                        <i class="bi bi-x-circle me-1"></i> Reset
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Records Table Card -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">Records Log</h5>
+                <small class="text-muted">
+                    {% if pagination %}
+                        Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} - 
+                        {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} records
+                    {% elif records %}
+                        Total {{ records|length }} records found
+                    {% else %}
+                        No records to display
+                    {% endif %}
+                </small>
+            </div>
+            {% if records or (pagination and pagination.items) %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> Present Verified
+                </span>
+                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> Absent Recorded
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date & Time</th>
+                            <th>Period</th>
+                            <th>Student</th>
+                            <th>Section</th>
+                            <th>Subject</th>
+                            <th>Faculty</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set record_items = pagination.items if pagination else records %}
+                        {% if record_items %}
+                            {% for rec in record_items %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-semibold text-dark">
+                                        {{ rec.session.date.strftime('%d %b %Y') if rec.session and rec.session.date else (rec.date if rec.date else '-') }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ rec.first_seen_at.strftime('%I:%M %p') if rec.first_seen_at else (rec.time if rec.time else '-') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        P{{ rec.session.period_number if rec.session else (rec.period|default(1)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ rec.student.user.name if rec.student and rec.student.user else (rec.student_name|default('Student')) }}</strong>
+                                    <div class="small text-muted font-monospace">
+                                        {{ rec.student.roll_number if rec.student else (rec.roll_number|default('-')) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        {{ rec.session.section.name if rec.session and rec.session.section else (rec.section_name|default('-')) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">
+                                        {{ rec.session.subject.code if rec.session and rec.session.subject else (rec.subject_code|default('')) }}
+                                    </div>
+                                    <div class="small text-muted text-truncate" style="max-width: 140px;">
+                                        {{ rec.session.subject.name if rec.session and rec.session.subject else (rec.subject_name|default('-')) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-dark">
+                                        {{ rec.session.faculty.name if rec.session and rec.session.faculty else (rec.faculty_name|default('Faculty')) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if rec.status == 'present' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-check-circle me-1"></i>Present
+                                        </span>
+                                    {% elif rec.status == 'late' %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-clock me-1"></i>Late
+                                        </span>
+                                    {% elif rec.status == 'excused' %}
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-info-circle me-1"></i>Excused
+                                        </span>
+                                    {% elif rec.status == 'needs_review' %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-question-circle me-1"></i>Review
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-x-circle me-1"></i>Absent
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    {% if rec.student_id or (rec.student and rec.student.id) %}
+                                    <a href="{{ url_for('hod.student_detail', student_id=rec.student_id if rec.student_id else rec.student.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="Student Profile">
+                                        <i class="bi bi-person-lines-fill"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-folder2-open display-6 d-block mb-2 text-secondary"></i>
+                                    No attendance records found for the selected criteria.
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('hod.attendance') }}" class="btn btn-sm btn-light border">
+                                            Clear Filters
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="card-footer bg-white border-top border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <small class="text-muted">
+                Page <strong>{{ pagination.page }}</strong> of <strong>{{ pagination.pages }}</strong>
+            </small>
+            <nav aria-label="Attendance records pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('hod.attendance', page=pagination.prev_num, date=request.args.get('date'), section_id=request.args.get('section_id'), subject_id=request.args.get('subject_id'), status=request.args.get('status')) if pagination.has_prev else '#' }}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('hod.attendance', page=p, date=request.args.get('date'), section_id=request.args.get('section_id'), subject_id=request.args.get('subject_id'), status=request.args.get('status')) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('hod.attendance', page=pagination.next_num, date=request.args.get('date'), section_id=request.args.get('section_id'), subject_id=request.args.get('subject_id'), status=request.args.get('status')) if pagination.has_next else '#' }}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AttendAI | Login</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="page-wrapper">
+
+        <!-- Brand Section -->
+        <section class="brand-section">
+
+            <div class="brand-content">
+
+                <div class="logo">
+                    <span class="logo-icon">✦</span>
+                    <span>Attend<span>AI</span></span>
+                </div>
+
+                <div class="brand-text">
+
+                    <p class="small-label">
+                        SMART ATTENDANCE PLATFORM
+                    </p>
+
+                    <h1>
+                        Smarter classrooms.<br>
+                        <span>Better learning.</span>
+                    </h1>
+
+                    <p class="description">
+                        A secure and intelligent attendance management system
+                        designed for modern educational institutions.
+                    </p>
+
+                </div>
+
+                <div class="features">
+
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Real-time attendance tracking</span>
+                    </div>
+
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>AI-powered face recognition</span>
+                    </div>
+
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Secure role-based access</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="circle circle-one"></div>
+            <div class="circle circle-two"></div>
+
+        </section>
+
+        <!-- Authentication Section -->
+        <section class="login-section">
+
+            <div class="login-card">
+
+                <!-- Mobile Logo -->
+                <div class="mobile-logo">
+
+                    <div class="logo">
+                        <span class="logo-icon">✦</span>
+                        <span>Attend<span>AI</span></span>
+                    </div>
+
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginView">
+
+                    <div class="welcome-text">
+                        <h2>Welcome back</h2>
+                        <p>Sign in to continue to your dashboard</p>
+                    </div>
+
+                    <form id="loginForm">
+
+                        <label for="role">
+                            Login as
+                        </label>
+
+                        <!-- Role Selection -->
+                        <div class="role-grid">
+
+                            <button
+                                type="button"
+                                class="role-button active"
+                                data-role="admin"
+                            >
+                                <span class="role-icon">♙</span>
+                                <span>Admin</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="role-button"
+                                data-role="faculty"
+                            >
+                                <span class="role-icon">▣</span>
+                                <span>Faculty</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="role-button"
+                                data-role="student"
+                            >
+                                <span class="role-icon">♧</span>
+                                <span>Student</span>
+                            </button>
+
+                        </div>
+
+                        <input
+                            type="hidden"
+                            id="role"
+                            value="admin"
+                        >
+
+                        <!-- Username -->
+                        <div class="input-group">
+
+                            <label for="username">
+                                Username or ID
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">♙</span>
+
+                                <input
+                                    type="text"
+                                    id="username"
+                                    placeholder="Enter your username or ID"
+                                    autocomplete="username"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                        <!-- Password -->
+                        <div class="input-group">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">▣</span>
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    id="togglePassword"
+                                >
+                                    Show
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Remember and Forgot Password -->
+                        <div class="form-options">
+
+                            <label class="remember-option">
+
+                                <input
+                                    type="checkbox"
+                                    id="remember"
+                                >
+
+                                <span>Remember me</span>
+
+                            </label>
+
+                            <a
+                                href="#"
+                                id="forgotPassword"
+                                class="forgot-link"
+                            >
+                                Forgot password?
+                            </a>
+
+                        </div>
+
+                        <!-- Login Button -->
+                        <button
+                            type="submit"
+                            class="login-button"
+                        >
+                            <span>Sign in to dashboard</span>
+                            <span class="arrow">→</span>
+                        </button>
+
+                        <p id="message"></p>
+
+                        <!-- Signup Link -->
+                        <div class="signup-option">
+
+                            <span>New to AttendAI?</span>
+
+                            <button
+                                type="button"
+                                id="showSignup"
+                            >
+                                Create an account
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupView" class="hidden">
+
+                    <div class="welcome-text">
+
+                        <h2>Create an account</h2>
+
+                        <p>
+                            Register to access the AttendAI platform
+                        </p>
+
+                    </div>
+
+                    <form id="signupForm">
+
+                        <!-- Full Name -->
+                        <div class="input-group">
+
+                            <label for="fullName">
+                                Full name
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">♙</span>
+
+                                <input
+                                    type="text"
+                                    id="fullName"
+                                    placeholder="Enter your full name"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                        <!-- Email -->
+                        <div class="input-group">
+
+                            <label for="email">
+                                Email address
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">@</span>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    placeholder="Enter your email address"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                        <!-- Role -->
+                        <div class="input-group">
+
+                            <label for="signupRole">
+                                Select role
+                            </label>
+
+                            <div class="input-wrapper select-wrapper">
+
+                                <span class="input-icon">▣</span>
+
+                                <select
+                                    id="signupRole"
+                                    required
+                                >
+                                    <option value="">
+                                        Choose your role
+                                    </option>
+
+                                    <option value="faculty">
+                                        Faculty
+                                    </option>
+
+                                    <option value="student">
+                                        Student
+                                    </option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Password -->
+                        <div class="input-group">
+
+                            <label for="signupPassword">
+                                Create password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">▣</span>
+
+                                <input
+                                    type="password"
+                                    id="signupPassword"
+                                    placeholder="Create a password"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="input-group">
+
+                            <label for="confirmPassword">
+                                Confirm password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">▣</span>
+
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    placeholder="Confirm your password"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+                        <!-- Terms -->
+                        <label class="terms-option">
+
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                required
+                            >
+
+                            <span>
+                                I agree to the terms and privacy policy
+                            </span>
+
+                        </label>
+
+                        <!-- Signup Button -->
+                        <button
+                            type="submit"
+                            class="login-button"
+                        >
+                            <span>Create account</span>
+                            <span class="arrow">→</span>
+                        </button>
+
+                        <p id="signupMessage"></p>
+
+                        <!-- Back to Login -->
+                        <div class="signup-option">
+
+                            <span>Already have an account?</span>
+
+                            <button
+                                type="button"
+                                id="showLogin"
+                            >
+                                Sign in
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <div class="security-note">
+                    <span>▣</span>
+                    Your data is protected with secure authentication
+                </div>
+
+                <p class="copyright">
+                    © 2026 AttendAI. All rights reserved.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

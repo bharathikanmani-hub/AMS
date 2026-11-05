@@ -1,0 +1,30 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+instance/
+
+# Local attendance and biometric/user data (never commit)
+users.json
+attendance.csv
+face_database.npz
+dataset/
+_original_backup/
+
+# Frontend build/dependencies
+node_modules/
+dist/
+
+# Local databases, logs and editor files
+*.sqlite
+*.sqlite3
+*.db
+*.log
+.vscode/
+.idea/

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard - AttendAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Welcome Banner -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 text-white overflow-hidden" 
+         style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 rounded-pill mb-3">
+                        <i class="bi bi-calendar3 me-1"></i> 
+                        {{ today.strftime('%A, %d %B %Y') if today and today.strftime is defined else today|default('Today') }}
+                    </span>
+                    <h2 class="fw-bold mb-2 text-white">Welcome back, {{ current_user.name }}!</h2>
+                    <p class="text-white text-opacity-75 mb-0 fs-6">
+                        Manage your classes, trigger face-recognition automated attendance, and track real-time classroom statistics.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                        <a href="{{ url_for('faculty.start_attendance') }}" class="btn btn-light text-primary fw-semibold shadow-sm px-4 py-2">
+                            <i class="bi bi-camera-video-fill me-1"></i> Start Attendance
+                        </a>
+                        <a href="{{ url_for('faculty.timetable') }}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-calendar-week me-1"></i> Weekly Schedule
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- Today's Periods -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-3 p-xl-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-muted small text-uppercase fw-semibold">Today's Periods</span>
+                        <div class="rounded-3 p-2 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-calendar-event-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">
+                        {{ stats.today_periods if stats and stats.today_periods is defined else (today_timetable|length if today_timetable else 0) }}
+                    </h3>
+                    <small class="text-muted">Scheduled lectures today</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Sessions -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-3 p-xl-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-muted small text-uppercase fw-semibold">Completed Sessions</span>
+                        <div class="rounded-3 p-2 bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-check2-circle fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-success">
+                        {{ stats.completed_sessions if stats and stats.completed_sessions is defined else 0 }}
+                    </h3>
+                    <small class="text-muted">Conducted this term</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Students -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-3 p-xl-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-muted small text-uppercase fw-semibold">Assigned Students</span>
+                        <div class="rounded-3 p-2 bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-people-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">
+                        {{ stats.total_students if stats and stats.total_students is defined else 0 }}
+                    </h3>
+                    <small class="text-muted">Across all your mapped sections</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avg Attendance -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-3 p-xl-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-muted small text-uppercase fw-semibold">Avg Attendance</span>
+                        <div class="rounded-3 p-2 bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-percent fs-5"></i>
+                        </div>
+                    </div>
+                    {% set fac_avg = stats.avg_attendance|default(0.0)|float %}
+                    <h3 class="fw-bold mb-1 text-dark">
+                        {{ "%.1f"|format(fac_avg) }}%
+                    </h3>
+                    <div class="progress mt-2" style="height: 5px;">
+                        <div class="progress-bar {% if fac_avg >= 75 %}bg-success{% elif fac_avg >= 65 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ fac_avg if fac_avg <= 100 else 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Schedule Table -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-clock text-primary me-2"></i>Today's Class Schedule
+                </h5>
+                <small class="text-muted">Timetable slots assigned to you for today</small>
+            </div>
+            <a href="{{ url_for('faculty.start_attendance') }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> New Session
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Period</th>
+                            <th>Time Window</th>
+                            <th>Subject</th>
+                            <th>Section</th>
+                            <th>Classroom</th>
+                            <th>Session Status</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if today_timetable %}
+                            {% for slot in today_timetable %}
+                            {% set is_active_now = slot.is_current|default(false) %}
+                            <tr class="{% if is_active_now %}table-primary bg-opacity-25{% endif %}">
+                                <td class="ps-4">
+                                    <span class="badge {% if is_active_now %}bg-primary{% else %}bg-light text-dark border{% endif %} px-2 py-1">
+                                        Period {{ slot.period_number }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">
+                                        {{ slot.start_time.strftime('%I:%M %p') if slot.start_time and slot.start_time.strftime is defined else slot.start_time }}
+                                        - 
+                                        {{ slot.end_time.strftime('%I:%M %p') if slot.end_time and slot.end_time.strftime is defined else slot.end_time }}
+                                    </div>
+                                    {% if is_active_now %}
+                                        <small class="text-primary fw-bold"><i class="bi bi-broadcast me-1"></i>Current Period</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ slot.mapping.subject.code if slot.mapping and slot.mapping.subject else (slot.subject_code|default('')) }}</strong>
+                                    <div class="small text-muted">
+                                        {{ slot.mapping.subject.name if slot.mapping and slot.mapping.subject else (slot.subject_name|default('-')) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        {{ slot.mapping.section.name if slot.mapping and slot.mapping.section else (slot.section_name|default('-')) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small text-dark">
+                                        <i class="bi bi-geo-alt me-1 text-muted"></i>
+                                        Room {{ slot.classroom.room_number if slot.classroom else (slot.room_number|default('-')) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if slot.session_status == 'completed' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-check-circle me-1"></i>Completed
+                                        </span>
+                                    {% elif slot.session_status in ['started', 'in_progress'] %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">
+                                            <i class="bi bi-record-circle-fill me-1 text-danger"></i>In Progress
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border">
+                                            Upcoming
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    {% if slot.session_id %}
+                                        <a href="{{ url_for('faculty.session_detail', session_id=slot.session_id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i> View Session
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('faculty.start_attendance') }}?timetable_id={{ slot.id }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill me-1"></i> Start Attendance
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-check display-6 d-block mb-2 text-secondary"></i>
+                                    No classes scheduled for today on your timetable.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Attendance Sessions (Last 10) -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-bottom border-light py-3 d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-journal-check text-primary me-2"></i>Recent Attendance Sessions
+                </h5>
+                <small class="text-muted">Last 10 attendance sessions taken by you</small>
+            </div>
+            <a href="{{ url_for('faculty.attendance_list') }}" class="btn btn-sm btn-outline-primary">
+                View All History
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date & Time</th>
+                            <th>Period</th>
+                            <th>Subject</th>
+                            <th>Section</th>
+                            <th>Present / Total</th>
+                            <th>Rate</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_sessions %}
+                            {% for sess in recent_sessions %}
+                            {% set pres_count = sess.present_count|default(sess.records|selectattr('status', 'equalto', 'present')|list|length) %}
+                            {% set total_count = sess.total_students|default(sess.records|length) %}
+                            {% set rate = ((pres_count / total_count * 100) if total_count > 0 else 0.0)|float %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-semibold text-dark">
+                                        {{ sess.date.strftime('%d %b %Y') if sess.date and sess.date.strftime is defined else sess.date }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ sess.start_time.strftime('%I:%M %p') if sess.start_time and sess.start_time.strftime is defined else '' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        P{{ sess.period_number }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ sess.subject.code if sess.subject else (sess.subject_code|default('')) }}</strong>
+                                    <div class="small text-muted">{{ sess.subject.name if sess.subject else (sess.subject_name|default('-')) }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        {{ sess.section.name if sess.section else (sess.section_name|default('-')) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ pres_count }}</span>
+                                    <span class="text-muted">/ {{ total_count }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if rate >= 75 %}text-success{% elif rate >= 65 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ "%.1f"|format(rate) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if sess.status == 'completed' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">Completed</span>
+                                    {% elif sess.status in ['started', 'in_progress'] %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ sess.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="{{ url_for('faculty.session_detail', session_id=sess.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="Session Details">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox display-6 d-block mb-2 text-secondary"></i>
+                                    No attendance sessions conducted yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

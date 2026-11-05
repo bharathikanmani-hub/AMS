@@ -1,0 +1,33 @@
+# Flask and extensions
+flask>=3.0
+flask-sqlalchemy>=3.1
+flask-login>=0.6
+flask-wtf>=1.2
+flask-migrate>=4.0
+
+# Database
+pymysql>=1.1
+cryptography>=41.0
+
+# Environment and config
+python-dotenv>=1.0
+
+# Computer vision
+opencv-python>=4.8
+numpy>=1.24
+
+# Password hashing (included with Flask but listed explicitly)
+werkzeug>=3.0
+
+# Form validation
+wtforms>=3.1
+email-validator>=2.0
+
+# Reports
+openpyxl>=3.1
+reportlab>=4.0
+
+# Email — uses stdlib smtplib, no extra package needed
+
+# Testing
+pytest>=7.4

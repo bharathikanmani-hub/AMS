@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Attendance - Class Attendance</title>
+    <link rel="stylesheet" href="class_attendance.css">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-icon">🎓</span>
+            <div>
+                <h2>AI Attendance</h2>
+                <p>Management System</p>
+            </div>
+        </div>
+
+        <nav>
+            <a href="#">⌂ &nbsp; Dashboard</a>
+            <a href="#" class="active">♟ &nbsp; Class Attendance</a>
+            <a href="#">▣ &nbsp; My Classes</a>
+            <a href="#">♟ &nbsp; Students</a>
+            <a href="#">▥ &nbsp; Reports</a>
+            <a href="#">♙ &nbsp; Profile</a>
+            <a href="#">🔒 &nbsp; Change Password</a>
+            <a href="/logout">⇥ &nbsp; Logout</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <header class="page-header">
+            <div class="heading">
+                <span class="heading-icon">▦</span>
+                <div>
+                    <h1>Class Attendance</h1>
+                    <p>View and manage attendance for your classes.</p>
+                </div>
+            </div>
+
+            <input type="date" id="attendanceDate">
+        </header>
+
+        <!-- SUMMARY CARDS -->
+        <section class="stats">
+
+            <div class="stat">
+                <div class="stat-icon blue">♟</div>
+                <div>
+                    <p>Total Students</p>
+                    <h2 id="total">42</h2>
+                    <small>In this class</small>
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon green">✓</div>
+                <div>
+                    <p>Present</p>
+                    <h2 id="present">33</h2>
+                    <small id="presentPct">78.6%</small>
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon red">✕</div>
+                <div>
+                    <p>Absent</p>
+                    <h2 id="absent">9</h2>
+                    <small id="absentPct">21.4%</small>
+                </div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon purple">◷</div>
+                <div>
+                    <p>Attendance (Today)</p>
+                    <h2 id="todayPct">78.6%</h2>
+                    <small>Attendance percentage</small>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ATTENDANCE TABLE AND RIGHT SIDEBAR -->
+        <section class="content-grid">
+
+            <article class="panel class-panel">
+
+                <div class="toolbar">
+                    <h3>▣ &nbsp; Data Structures &amp; Algorithms
+                        <small>(CSE-301)</small>
+                    </h3>
+
+                    <select id="yearSelect">
+                        <option>3rd Year CSE</option>
+                        <option>2nd Year CSE</option>
+                        <option>4th Year CSE</option>
+                    </select>
+
+                    <select id="sectionSelect">
+                        <option>Section A</option>
+                        <option>Section B</option>
+                        <option>Section C</option>
+                    </select>
+
+                    <button class="primary-btn" id="saveBtn">
+                        ☁ Save Attendance
+                    </button>
+
+                    <button class="outline-btn" id="resetBtn">
+                        ↻ Reset
+                    </button>
+                </div>
+
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Attendance Status</th>
+                                <th>Remarks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="studentRows"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span id="showingText"></span>
+                    <div id="pagination"></div>
+                </div>
+
+                <p id="saveMessage"></p>
+
+            </article>
+
+            <!-- RIGHT SIDE -->
+            <aside class="right-column">
+
+                <article class="panel">
+                    <h3>⚡ Quick Actions</h3>
+
+                    <button class="quick-btn dark" id="allPresent">
+                        ✓ &nbsp; Mark All Present
+                    </button>
+
+                    <button class="quick-btn" id="allAbsent">
+                        ✕ &nbsp; Mark All Absent
+                    </button>
+
+                    <button class="quick-btn" id="downloadReport">
+                        ⇩ &nbsp; Download Report
+                    </button>
+                </article>
+
+                <article class="panel">
+                    <h3>▣ Attendance Summary</h3>
+
+                    <div class="summary">
+                        <div class="donut" id="donut">
+                            <div>
+                                <strong id="donutPercent">78.6%</strong>
+                                <small>Present</small>
+                            </div>
+                        </div>
+
+                        <div class="legend">
+                            <p><span class="dot present-dot"></span>
+                                Present <b id="legendPresent">33</b>
+                            </p>
+                            <p><span class="dot absent-dot"></span>
+                                Absent <b id="legendAbsent">9</b>
+                            </p>
+                            <p><span class="dot total-dot"></span>
+                                Total <b id="legendTotal">42</b>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="alert-heading">
+                        <h3>⚠ Low Attendance Alerts</h3>
+                        <button id="viewAlerts">View All</button>
+                    </div>
+
+                    <div id="alertsList"></div>
+
+                    <div class="info-note">
+                        ⓘ You can edit attendance before final submission.
+                        <small>
+                            Changes will be saved only when you click
+                            Save Attendance.
+                        </small>
+                    </div>
+                </article>
+
+            </aside>
+        </section>
+
+        <footer>
+            © 2026 AI Attendance Management System. All rights reserved.
+        </footer>
+
+    </main>
+</div>
+
+<script src="class_attendance.js"></script>
+</body>
+</html>

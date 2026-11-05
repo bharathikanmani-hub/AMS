@@ -1,0 +1,1 @@
+"""AttendAI application routes package."""

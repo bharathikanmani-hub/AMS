@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendAI | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./admin_dashboard.css">
+</head>
+<body>
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">AI</div>
+        <div>
+            <h2>AttendAI</h2>
+            <p>Admin Panel</p>
+        </div>
+    </div>
+
+    <nav class="menu">
+        <button class="menu-btn active" onclick="showSection('dashboard', this)">Dashboard</button>
+        <button class="menu-btn" onclick="showSection('students', this)">Students</button>
+        <button class="menu-btn" onclick="showSection('attendance', this)">Attendance</button>
+        <button class="menu-btn" onclick="showSection('recognition', this)">Face Attendance</button>
+        <button class="menu-btn" onclick="showSection('reports', this)">Reports</button>
+    </nav>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</aside>
+
+<main class="main">
+    <header class="topbar">
+        <div>
+            <h1 id="pageTitle">Dashboard</h1>
+            <p>Automatic classroom attendance with face recognition</p>
+        </div>
+        <div class="admin-area">
+            <div class="admin">
+                <div class="avatar" id="adminInitial">A</div>
+                <div>
+                    <strong id="adminName">Administrator</strong>
+                    <small>Admin</small>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="dashboard" class="section active">
+        <div class="welcome">
+            <div>
+                <h2>Welcome back</h2>
+                <p>Live overview from attendance.csv and registered faces.</p>
+            </div>
+            <div id="todayDate"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon blue">ID</div>
+                <div>
+                    <p>Registered students</p>
+                    <h2 id="totalStudents">0</h2>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">P</div>
+                <div>
+                    <p>Present today</p>
+                    <h2 id="presentStudents">0</h2>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red">A</div>
+                <div>
+                    <p>Absent today</p>
+                    <h2 id="absentStudents">0</h2>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">%</div>
+                <div>
+                    <p>Today's attendance</p>
+                    <h2 id="overallPercentage">0%</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <div>
+                    <h3>Today's log</h3>
+                    <p>Latest present and absent marks</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todayTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="students" class="section">
+        <div class="heading">
+            <h2>Registered students</h2>
+            <p>Attendance percentage is calculated from saved sessions</p>
+        </div>
+        <div class="filters">
+            <input id="studentSearch" type="text" placeholder="Search student ID" oninput="filterStudents()">
+        </div>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Present days</th>
+                            <th>Sessions</th>
+                            <th>Attendance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="attendance" class="section">
+        <div class="heading">
+            <h2>Attendance history</h2>
+            <p>All records written by the face recognition session</p>
+        </div>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student ID</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="recognition" class="section">
+        <div class="heading">
+            <h2>Start face attendance</h2>
+            <p>Opens the webcam window. Press Q in that window when class is over.</p>
+        </div>
+        <div class="recognition-box">
+            <div class="camera-area">
+                <div class="camera-icon">Cam</div>
+                <h2>Classroom camera</h2>
+                <p id="recognitionMessage">
+                    Recognized students are marked Present. Everyone else in the dataset is marked Absent when you finish.
+                </p>
+                <button class="primary-btn" onclick="startRecognition()">Start attendance</button>
+            </div>
+            <div class="recognition-info">
+                <div class="info-card">
+                    <p>Present today</p>
+                    <h2 id="recognitionPageMarked">0</h2>
+                </div>
+                <div class="info-card">
+                    <p>Absent today</p>
+                    <h2 id="recognitionPageUnknown">0</h2>
+                </div>
+                <div class="info-card">
+                    <p>Registered faces</p>
+                    <h2 id="recognitionPageRecognized">0</h2>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="reports" class="section">
+        <div class="heading">
+            <h2>Reports</h2>
+            <p>Quick summaries from the same attendance file</p>
+        </div>
+        <div class="report-grid">
+            <div class="report-card">
+                <h3>Daily report</h3>
+                <p>Who was present and absent today</p>
+                <button onclick="generateReport('daily')">Show</button>
+            </div>
+            <div class="report-card">
+                <h3>Full log</h3>
+                <p>Every saved attendance row</p>
+                <button onclick="generateReport('full')">Show</button>
+            </div>
+            <div class="report-card">
+                <h3>Low attendance</h3>
+                <p>Students below 75%</p>
+                <button onclick="generateReport('low')">Show</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="./admin_dashboard.js"></script>
+</body>
+</html>

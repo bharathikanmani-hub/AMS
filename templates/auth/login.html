@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendAI | Sign In</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --navy: #111936;
+            --text: #20263d;
+            --muted: #7b8197;
+            --border: #e4e7f0;
+            --background: #f7f8fc;
+            --white: #ffffff;
+            --success: #16845a;
+            --error: #d14343;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background: var(--background);
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Brand Section (Left Side) */
+        .brand-section {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 50%;
+            min-height: 100vh;
+            padding: 70px 9%;
+            overflow: hidden;
+            color: var(--white);
+            background: linear-gradient(145deg, #101735, #202b5a);
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 2;
+            max-width: 500px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--white);
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-decoration: none;
+        }
+
+        .logo > span:last-child > span {
+            color: #8d9cff;
+        }
+
+        .logo-icon {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            color: var(--white);
+            font-size: 22px;
+            background: var(--primary);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .brand-text {
+            margin-top: 100px;
+        }
+
+        .small-label {
+            margin-bottom: 22px;
+            color: #aeb6dc;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .brand-text h1 {
+            font-size: clamp(36px, 3.8vw, 58px);
+            line-height: 1.15;
+            letter-spacing: -2px;
+            font-weight: 800;
+        }
+
+        .brand-text h1 span {
+            color: #8d9cff;
+        }
+
+        .description {
+            max-width: 430px;
+            margin-top: 24px;
+            color: #b5bcda;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 44px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            color: #d6daf0;
+            font-size: 14px;
+        }
+
+        .feature-icon {
+            display: grid;
+            place-items: center;
+            width: 24px;
+            height: 24px;
+            border: 1px solid rgba(141, 156, 255, 0.5);
+            border-radius: 50%;
+            color: #aab5ff;
+            font-size: 12px;
+        }
+
+        /* Decorative Circles */
+        .circle {
+            position: absolute;
+            border: 1px solid rgba(141, 156, 255, 0.12);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .circle-one {
+            right: -190px;
+            bottom: -220px;
+            width: 570px;
+            height: 570px;
+        }
+
+        .circle-two {
+            right: -105px;
+            bottom: -120px;
+            width: 380px;
+            height: 380px;
+        }
+
+        /* Login Section (Right Side) */
+        .login-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            min-height: 100vh;
+            padding: 40px 6%;
+            background: var(--background);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .mobile-logo {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-logo .logo {
+            color: var(--navy);
+        }
+
+        .welcome-text {
+            margin-bottom: 28px;
+        }
+
+        .welcome-text h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .welcome-text p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* Flash Message styling */
+        .flash-box {
+            margin-bottom: 20px;
+        }
+
+        .alert-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Form Controls */
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        /* Role Selection Grid */
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .role-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 6px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--white);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .role-button i {
+            font-size: 18px;
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+
+        .role-button:hover {
+            border-color: #cbd5e1;
+            color: var(--navy);
+        }
+
+        .role-button.active {
+            border-color: var(--primary);
+            background: #f5f3ff;
+            color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+        }
+
+        .role-button.active i {
+            color: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--muted);
+            font-size: 16px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px 0 44px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--white);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .password-toggle:hover {
+            color: var(--navy);
+        }
+
+        /* Form Options (Remember & Forgot) */
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+
+        .remember-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--muted);
+        }
+
+        .remember-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Submit Button */
+        .login-button {
+            width: 100%;
+            height: 48px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: var(--white);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+            font-family: inherit;
+        }
+
+        .login-button:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+        }
+
+        .arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .login-button:hover .arrow {
+            transform: translateX(4px);
+        }
+
+        /* Security Note & Copyright */
+        .security-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 32px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .security-note i {
+            color: var(--success);
+        }
+
+        .copyright {
+            margin-top: 14px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .brand-section {
+                display: none;
+            }
+            .login-section {
+                width: 100%;
+                padding: 40px 24px;
+            }
+            .mobile-logo {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="page-wrapper">
+
+        <!-- Brand Section (Left) -->
+        <section class="brand-section">
+            <div class="brand-content">
+                <a href="#" class="logo">
+                    <span class="logo-icon">✦</span>
+                    <span>Attend<span>AI</span></span>
+                </a>
+
+                <div class="brand-text">
+                    <p class="small-label">SMART ATTENDANCE PLATFORM</p>
+                    <h1>
+                        Smarter classrooms.<br>
+                        <span>Better learning.</span>
+                    </h1>
+                    <p class="description">
+                        A secure and intelligent attendance management system designed for modern educational institutions.
+                    </p>
+                </div>
+
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="feature-icon"><i class="bi bi-check-lg"></i></span>
+                        <span>Real-time attendance tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"><i class="bi bi-check-lg"></i></span>
+                        <span>AI-powered face recognition</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"><i class="bi bi-check-lg"></i></span>
+                        <span>Secure role-based access</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="circle circle-one"></div>
+            <div class="circle circle-two"></div>
+        </section>
+
+        <!-- Login Section (Right) -->
+        <section class="login-section">
+            <div class="login-card">
+
+                <!-- Mobile Logo -->
+                <div class="mobile-logo">
+                    <div class="logo">
+                        <span class="logo-icon">✦</span>
+                        <span>Attend<span style="color: var(--primary);">AI</span></span>
+                    </div>
+                </div>
+
+                <div class="welcome-text">
+                    <h2>Welcome back</h2>
+                    <p>Sign in to continue to your dashboard</p>
+                </div>
+
+                <!-- Flash Messages -->
+                <div class="flash-box">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                {% set cat_class = 'alert-danger' if category in ['error', 'danger'] else ('alert-warning' if category == 'warning' else ('alert-info' if category == 'info' else 'alert-success')) %}
+                                <div class="alert-item {{ cat_class }}">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <label class="form-label">Login as</label>
+
+                    <!-- Role Selection Buttons -->
+                    <div class="role-grid">
+                        <button type="button" class="role-button active" data-role="admin">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Admin</span>
+                        </button>
+                        <button type="button" class="role-button" data-role="hod">
+                            <i class="bi bi-diagram-3-fill"></i>
+                            <span>HOD</span>
+                        </button>
+                        <button type="button" class="role-button" data-role="faculty">
+                            <i class="bi bi-person-video3"></i>
+                            <span>Faculty</span>
+                        </button>
+                        <button type="button" class="role-button" data-role="student">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <span>Student</span>
+                        </button>
+                    </div>
+
+                    <!-- Hidden Input for Selected Role -->
+                    <input type="hidden" name="role" id="roleInput" value="admin">
+
+                    <!-- Email / Username -->
+                    <div class="input-group">
+                        <label class="form-label" for="email">Email address</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="bi bi-envelope"></i></span>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                placeholder="name@institution.edu" 
+                                autocomplete="email" 
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="bi bi-lock"></i></span>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Enter your password" 
+                                autocomplete="current-password" 
+                                required
+                            >
+                            <button type="button" class="password-toggle" id="togglePassword">Show</button>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="form-options">
+                        <label class="remember-option">
+                            <input type="checkbox" name="remember" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="{{ url_for('auth.forgot_password') if current_app and 'auth.forgot_password' in current_app.view_functions else '/auth/forgot-password' }}" class="forgot-link">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="login-button">
+                        <span>Sign in to dashboard</span>
+                        <span class="arrow"><i class="bi bi-arrow-right"></i></span>
+                    </button>
+                </form>
+
+                <div class="security-note">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Your data is protected with secure role-based encryption</span>
+                </div>
+
+                <p class="copyright">
+                    © 2026 AttendAI. All rights reserved.
+                </p>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Role Selection Handler
+        const roleButtons = document.querySelectorAll('.role-button');
+        const roleInput = document.getElementById('roleInput');
+
+        roleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                roleButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                roleInput.value = button.dataset.role;
+            });
+        });
+
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', () => {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                togglePassword.textContent = isPassword ? 'Hide' : 'Show';
+            });
+        }
+    </script>
+</body>
+</html>
